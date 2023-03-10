@@ -8,3 +8,7 @@ sum(is.na(test_df))
 dim(test_df)
 
 str(test_df)
+
+summary(test_df)
+
+colnames(test_df)
