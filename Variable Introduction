@@ -1,0 +1,15 @@
+Variable Introduction:
+
+price	 The cost at which the house is/ would be obtained.
+area	 The square footage of the home.
+bedrooms	 The number of bedrooms in the home.
+bathrooms	 The number of bathrooms in the home.
+stories 	 The number of levels in a house with a floor that could be used by people.
+mainroad	 Whetehr or not the house sits on a mainroad or not.
+guestroom	 Whether or not a house has a guestroom or not.
+basement	 Whether the house has basement (The substructure or foundation of a building).
+hotwaterheating 	 Whetehr or not there is hot water heating in the home.
+airconditioning 	 Whether or not there is airconditioning in the home (an electrical device that is purposely installed for the removal of heat and moisture from the interior of the home).
+parking 	 The number of parking spaces the home has.
+prefarea	 Whetehr or not the home is in a prefered area or not.
+furnishingstatus	 Whether the home is unfurnished, semifurnished, or furnished fully.
