@@ -1,0 +1,17 @@
+Interpretation of MLR:
+
+The intercept (which represents the estimated price when all predictors are equal to zero) is $6,899,854.62.
+
+For a one-unit increase in X, the price is expected to decrease by $10,039.56 (p < 0.001).
+
+The coefficient for the area variable suggests that, on average, a one-unit increase in area is associated with a $35.02 increase in price. However, the p-value (0.056) is only marginally significant, indicating that this variable may not be a strong predictor of price.
+
+The bedrooms, stories, mainroad, guestroom, basement, hotwaterheating, airconditioning, prefarea, and furnishingstatusfurnished predictors are not statistically significant predictors of price (p > 0.05).
+
+The bathrooms, parking, and furnishingstatussemi-furnished predictors are statistically significant predictors of price (p < 0.05). On average, a one-unit increase in bathrooms is associated with a $349,995.53 increase in price, a one-unit increase in parking is associated with a
+$146,014.04 increase in price, and having a furnishingstatussemi-furnished is associated with a 
+$238,163.97 decrease in price.
+
+With a R2 of .881 we can infer that the model is a good fit.
+
+With a Adjusted R2 of .8771 we can see that the additional predictors variables do not improve the fit of the model.
