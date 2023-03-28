@@ -1,0 +1,5 @@
+Objective:
+
+The purpose of this project is to predict housing prices based on certain factors like house area, bedrooms, furnished, nearness to main road, etc. 
+
+In this notebook you will find descriptive analysis of the data, steps taken to clean data, an MLR of the full model, and a report of the performance.

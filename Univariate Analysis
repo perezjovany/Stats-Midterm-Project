@@ -1,0 +1,29 @@
+# Univariate Analysis
+
+# Summary statistics for numeric variables
+summary(test_df[c("price", "area", "bathrooms", "stories", "parking")])
+
+# Frequency table for categorical variables
+table(test_df$mainroad)
+table(test_df$guestroom)
+table(test_df$basement)
+table(test_df$hotwaterheating)
+table(test_df$airconditioning)
+table(test_df$prefarea)
+
+# Bar plot for categorical variables
+barplot(table(test_df$mainroad), main="Main Road (Yes/No)", xlab="Main Road")
+barplot(table(test_df$guestroom), main="Guest Room (Yes/No)", xlab="Guest Room")
+barplot(table(test_df$basement), main="Basement (Yes/No)", xlab="Basement")
+barplot(table(test_df$hotwaterheating), main="Hot Water Heating (Yes/No)", xlab="Hot Water Heating")
+barplot(table(test_df$airconditioning), main="Air Conditioning (Yes/No)", xlab="Air Conditioning")
+barplot(table(test_df$prefarea), main="Preferred Area (Yes/No)", xlab="Preferred Area")
+
+# Bar plot for ordinal variable
+barplot(table(test_df$stories), main="Number of Stories", xlab="Stories")
+
+# Box plot for numeric variables
+boxplot(test_df$price, main="Price")
+boxplot(test_df$area, main="Area")
+boxplot(test_df$bathrooms, main="Number of Bathrooms")
+boxplot(test_df$parking, main="Number of Parking Spaces")
