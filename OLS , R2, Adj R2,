@@ -1,5 +1,5 @@
 # OLS model
-model <- lm(price ~ ., data = test_df)
+model <- lm(price ~ ., data = train_df)
 summary(model)
 
 # Iteratively remove insignificant parameters
