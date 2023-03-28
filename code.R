@@ -1,28 +1,32 @@
 # Read and Clean Data
-test_df = read.csv("Housing_test.csv")
-head(test_df)
+train_df = read.csv("Housing_train.csv")
+head(train_df)
 
 # Check for missing data
-sum(is.na(test_df))
+sum(is.na(train_df))
 
 # Checking data types
-str(test_df)
+str(train_df)
 
 # Binary values conversion
-test_df$mainroad = as.numeric(test_df$mainroad == "yes")
-test_df$guestroom = as.numeric(test_df$guestroom == "yes")
-test_df$basement = as.numeric(test_df$basement == "yes")
-test_df$hotwaterheating = as.numeric(test_df$hotwaterheating == "yes")
-test_df$airconditioning = as.numeric(test_df$airconditioning == "yes")
-test_df$prefarea = as.numeric(test_df$prefarea == "yes")
+train_df$mainroad = as.numeric(train_df$mainroad == "yes")
+train_df$guestroom = as.numeric(train_df$guestroom == "yes")
+train_df$basement = as.numeric(train_df$basement == "yes")
+train_df$hotwaterheating = as.numeric(train_df$hotwaterheating == "yes")
+train_df$airconditioning = as.numeric(train_df$airconditioning == "yes")
+train_df$prefarea = as.numeric(train_df$prefarea == "yes")
 
 # Dummy encoding
-test_df$furnishingstatus = factor(test_df$furnishingstatus,
+train_df$furnishingstatus = factor(train_df$furnishingstatus,
                         levels=c("unfurnished", "semi-furnished", "furnished"))
-contr.treatment(levels(test_df$furnishingstatus))
-str(test_df)
+contr.treatment(levels(train_df$furnishingstatus))
+str(train_df)
+
+# Drop index column
+train_df = train_df[, !names(train_df) %in% "X"]
+str(train_df)
 
 # Descriptive Analysis
-summary(test_df)
+summary(train_df)
 
 # Univariate Analysis
