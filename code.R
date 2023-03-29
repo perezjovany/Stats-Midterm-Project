@@ -1,4 +1,6 @@
-# Read and Clean Data
+# ---- TRAINING DATA ----
+
+# Read and Clean Training Data
 train_df = read.csv("Housing_train.csv")
 head(train_df)
 
@@ -29,4 +31,27 @@ str(train_df)
 # Descriptive Analysis
 summary(train_df)
 
-# Univariate Analysis
+# ---- TESTING DATA ----
+
+# Clean Testing Data
+test_df = read.csv("Housing_test.csv")
+
+# Check for missing data
+sum(is.na(test_df))
+
+# Binary values conversion
+test_df$mainroad = as.numeric(test_df$mainroad == "yes")
+test_df$guestroom = as.numeric(test_df$guestroom == "yes")
+test_df$basement = as.numeric(test_df$basement == "yes")
+test_df$hotwaterheating = as.numeric(test_df$hotwaterheating == "yes")
+test_df$airconditioning = as.numeric(test_df$airconditioning == "yes")
+test_df$prefarea = as.numeric(test_df$prefarea == "yes")
+
+# Dummy encoding
+test_df$furnishingstatus = factor(test_df$furnishingstatus,
+                        levels=c("unfurnished", "semi-furnished", "furnished"))
+
+# Drop index column
+test_df = test_df[, !names(test_df) %in% "X"]
+
+str(test_df)
