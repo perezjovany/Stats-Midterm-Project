@@ -87,6 +87,79 @@ boxplot(train_df$bathrooms, main="Number of Bathrooms")
 boxplot(train_df$parking, main="Number of Parking Spaces")
 
 
+# ---- Bivariate Analysis ----
+
+# Load required libraries
+library(ggplot2)
+library(reshape2)
+
+# Select only numeric variables
+numeric_vars <- train_df[, sapply(train_df, is.numeric)]
+
+# Create correlation matrix
+corr_matrix <- cor(numeric_vars)
+
+# Convert correlation matrix to long format
+corr_df <- reshape2::melt(corr_matrix)
+
+# Create heatmap with numbers
+ggplot(corr_df, aes(x=Var1, y=Var2, fill=value, label=round(value, 2))) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  geom_text(size=3, color="black") +
+  theme_minimal()
+
+# Now create Scatter Plots for the pairs of features having significant correlations.
+
+
+# Select significant correlations
+sig_corrs <- subset(reshape2::melt(corr_matrix), abs(value) > 0.38 & Var1 != Var2)
+sig_corrs
+
+#Scatterplot to visualize relationship between Area and Price
+ggplot(train_df, aes(x = area, y = price)) +
+  geom_point() +
+  labs(x = "Area", y = "Price") +
+  theme_minimal()
+
+ggplot(train_df, aes(x = bathrooms, y = price)) +
+  geom_point() +
+  labs(x = "Bathrooms", y = "Price") +
+  theme_minimal()
+
+
+ggplot(train_df, aes(x = stories, y = price)) +
+  geom_point() +
+  labs(x = "Stories", y = "Price") +
+  theme_minimal()
+
+ggplot(train_df, aes(x = airconditioning, y = price)) +
+  geom_point() +
+  labs(x = "Air Conditioning", y = "Price") +
+  theme_minimal()
+
+ggplot(train_df, aes(x = parking, y = price)) +
+  geom_point() +
+  labs(x = "Parking", y = "Price") +
+  theme_minimal()
+
+ggplot(train_df, aes(x = bathrooms, y = bedrooms)) +
+  geom_point() +
+  labs(x = "Bathrooms", y = "Bedrooms") +
+  theme_minimal()
+
+ggplot(train_df, aes(x = stories, y = bedrooms)) +
+  geom_point() +
+  labs(x = "Stories", y = "Bedrooms") +
+  theme_minimal()
+
+ggplot(train_df, aes(x = price, y = airconditioning)) +
+  geom_point() +
+  labs(x = "price", y = "air conditioning") +
+  theme_minimal()
+
+
+
 # ---- Model Building ----
 
 # OLS model
