@@ -175,7 +175,7 @@ ggplot(train_df, aes(x = price, y = airconditioning)) +
 # ---- Model Building ----
 
 # OLS model
-model <- lm(price ~ ., data = train_df)
+model <- lm(price ~ ., data = train_df, contrast = list(furnishingstatus="contr.sum"))
 summary(model)
 
 # Iteratively remove insignificant parameters
@@ -193,7 +193,7 @@ while (is_insignificant(model)) {
   insignificant_var <- rownames(coef_summary)[max_p_index]
   
   if (length(insignificant_var) > 0) {
-    message("Removing ", insignificant_var)
+    #message("Removing ", insignificant_var)
     model <- update(model, as.formula(paste("~ . -", insignificant_var)))
   } else {
     break
