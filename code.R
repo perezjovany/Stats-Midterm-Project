@@ -300,22 +300,28 @@ adj_new_test_r_squared #adj R^2 = .6252
 library(leaps)
 lm.full=lm(price~.,data=train_df)
 summary(lm.full)
-regfit.full=regsubsets(price~.,data=train_df,nvmax=10)
+# TODO: need update model to include interactions between variables
+# and variables^2
+regfit.full=regsubsets(model$terms,data=train_df,nvmax=10)
 summary(regfit.full)
 reg.summary=summary(regfit.full)
 names(reg.summary)
 par(mfrow =c(2,2))
+
 plot(reg.summary$rss ,xlab=" Number of Variables ",ylab=" RSS",type="l")
+
 plot(reg.summary$adjr2 ,xlab =" Number of Variables ",ylab=" Adjusted RSq",type="l")
 which.max (reg.summary$adjr2)
 points (which.max (reg.summary$adjr2), reg.summary$adjr2[which.max (reg.summary$adjr2)], col ="red",cex =2, pch =20)
+
 plot(reg.summary$cp ,xlab =" Number of Variables ",ylab="Cp",type="l")
 which.min (reg.summary$cp )
-
 points (which.min (reg.summary$cp ), reg.summary$cp [which.min (reg.summary$cp )], col ="red",cex =2, pch =20)
+
 plot(reg.summary$bic ,xlab=" Number of Variables ",ylab=" BIC",type="l")
 which.min (reg.summary$bic )
 points (which.min (reg.summary$bic ), reg.summary$bic [which.min (reg.summary$bic )], col =" red",cex =2, pch =20)
+
 plot(regfit.full ,scale ="r2")
 plot(regfit.full ,scale ="bic")
 coef.selected=coef(regfit.full ,which.min (reg.summary$bic ))
@@ -329,3 +335,4 @@ library(ggplot2)
 ggplot(data = melt(cor.matrix),aes(x=Var1,y=Var2,fill=value))+geom_tile()
 library(faraway)
 vif(model)
+# all variables has vif values lower than 5 so no multicollinearity
