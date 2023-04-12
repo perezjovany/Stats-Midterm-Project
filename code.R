@@ -296,7 +296,7 @@ adj_new_test_r_squared <- 1 - ((1 - new_test_r_squared) * (n - 1) / (n - p - 1))
 adj_new_test_r_squared #adj R^2 = .6252
 
 
-#teachers code
+#teachers code 4/10
 library(leaps)
 lm.full=lm(price~.,data=train_df)
 summary(lm.full)
@@ -321,3 +321,11 @@ plot(regfit.full ,scale ="bic")
 coef.selected=coef(regfit.full ,which.min (reg.summary$bic ))
 coef.selected
 
+#teachers code 4/12
+cor.matrix=cor(train_df[,sapply(train_df,is.numeric)])
+image(abs(cor.matrix))
+library(reshape2)
+library(ggplot2)
+ggplot(data = melt(cor.matrix),aes(x=Var1,y=Var2,fill=value))+geom_tile()
+library(faraway)
+vif(model)
