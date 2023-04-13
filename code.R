@@ -102,8 +102,8 @@ boxplot(train_df$parking, main="Number of Parking Spaces")
 # ---- Bivariate Analysis ----
 
 # Load required libraries
-#library(ggplot2)
-#library(reshape2)
+library(ggplot2)
+library(reshape2)
 
 # Select only numeric variables
 numeric_vars <- train_df[, sapply(train_df, is.numeric)]
@@ -193,7 +193,7 @@ while (is_insignificant(model)) {
   insignificant_var <- rownames(coef_summary)[max_p_index]
   
   if (length(insignificant_var) > 0) {
-    #message("Removing ", insignificant_var)
+    # message("Removing ", insignificant_var)
     model <- update(model, as.formula(paste("~ . -", insignificant_var)))
   } else {
     break
@@ -296,13 +296,23 @@ adj_new_test_r_squared <- 1 - ((1 - new_test_r_squared) * (n - 1) / (n - p - 1))
 adj_new_test_r_squared #adj R^2 = .6252
 
 
-#teachers code 4/10
+#teachers code 4/12 multicoll
+cor.matrix=cor(train_df[,sapply(train_df,is.numeric)])
+image(abs(cor.matrix))
+library(reshape2)
+library(ggplot2)
+ggplot(data = melt(cor.matrix),aes(x=Var1,y=Var2,fill=value))+geom_tile()
+library(faraway)
+vif(model)
+# all variables has vif values lower than 5 so no multicollinearity
+
+
+#teachers code 4/10 regsubsets
 library(leaps)
 lm.full=lm(price~.,data=train_df)
 summary(lm.full)
-# TODO: need update model to include interactions between variables
-# and variables^2
-regfit.full=regsubsets(model$terms,data=train_df,nvmax=10)
+# TODO: need update model to include interactions between variables and variables^2
+regfit.full=regsubsets(model$terms,data=train_df,nvmax=13)
 summary(regfit.full)
 reg.summary=summary(regfit.full)
 names(reg.summary)
@@ -327,12 +337,30 @@ plot(regfit.full ,scale ="bic")
 coef.selected=coef(regfit.full ,which.min (reg.summary$bic ))
 coef.selected
 
-#teachers code 4/12
-cor.matrix=cor(train_df[,sapply(train_df,is.numeric)])
-image(abs(cor.matrix))
-library(reshape2)
-library(ggplot2)
-ggplot(data = melt(cor.matrix),aes(x=Var1,y=Var2,fill=value))+geom_tile()
-library(faraway)
-vif(model)
-# all variables has vif values lower than 5 so no multicollinearity
+# teachers code 4/12 fwd/bwd
+regfit.fwd=regsubsets(model$terms,data=train_df,nvmax=13,method="forward")
+summary(regfit.fwd)
+regfit.bwd=regsubsets(model$terms,data=train_df,nvmax=13,method="backward")
+summary(regfit.bwd)
+coef(regfit.full,4)
+coef(regfit.fwd,4)
+coef(regfit.bwd,4)
+
+# teachers code 4/12 needs to be updated to our code TODO
+set.seed(1)
+train=sample(1:nrow(train_df), ceiling(nrow(train_df) * 0.75), replace=F)
+val=setdiff(1:nrow(train_df), train_df)
+regfit.best=regsubsets(model$terms,data=train_df,nvmax=13)
+val.mat <- model.matrix(model$terms, data = train_df[val,])
+val.err=rep(NA,13)
+for (i in 1:13)
+{
+  coefi=coef(regfit.best,id=i)
+  predi=val.mat[,names(coefi)]%*%coefi
+  # pred=predict.regsubsets(regfit.best,newdata=Credit[val,],id=i)
+  val.err[i]=mean((train_df$price[val]-predi)^2)
+}
+val.err
+which.min(val.err)
+coef(regfit.best,4)
+
