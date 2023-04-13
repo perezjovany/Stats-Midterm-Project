@@ -295,8 +295,11 @@ p <- length(model$coefficients) - 1 # subtract 1 for the intercept term
 adj_new_test_r_squared <- 1 - ((1 - new_test_r_squared) * (n - 1) / (n - p - 1))
 adj_new_test_r_squared #adj R^2 = .6252
 
+################################################################################
+# Utilize the lower code
 
-#teachers code 4/12 multicoll
+
+#teachers code 4/12 multicoll; utilize the following; currently does nothing TODO
 cor.matrix=cor(train_df[,sapply(train_df,is.numeric)])
 image(abs(cor.matrix))
 library(reshape2)
@@ -307,7 +310,7 @@ vif(model)
 # all variables has vif values lower than 5 so no multicollinearity
 
 
-#teachers code 4/10 regsubsets
+#teachers code 4/10 regsubsets; utilize the following; currently does nothing TODO
 library(leaps)
 lm.full=lm(price~.,data=train_df)
 summary(lm.full)
@@ -337,7 +340,7 @@ plot(regfit.full ,scale ="bic")
 coef.selected=coef(regfit.full ,which.min (reg.summary$bic ))
 coef.selected
 
-# teachers code 4/12 fwd/bwd
+# teachers code 4/12 fwd/bwd; utilize the following; currently does nothing TODO
 regfit.fwd=regsubsets(model$terms,data=train_df,nvmax=13,method="forward")
 summary(regfit.fwd)
 regfit.bwd=regsubsets(model$terms,data=train_df,nvmax=13,method="backward")
@@ -346,7 +349,7 @@ coef(regfit.full,4)
 coef(regfit.fwd,4)
 coef(regfit.bwd,4)
 
-# teachers code 4/12 needs to be updated to our code TODO
+# teachers code 4/12 train/val; utilize the following; currently does nothing TODO
 set.seed(1)
 train=sample(1:nrow(train_df), ceiling(nrow(train_df) * 0.75), replace=F)
 val=setdiff(1:nrow(train_df), train_df)
