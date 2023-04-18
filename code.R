@@ -231,8 +231,8 @@ plot(reg.summary$cp, xlab=" Number of Variables ", ylab="Cp", type="l",
 which.min (reg.summary$cp )
 points(which.min(reg.summary$cp), cp.best, col="blue", cex=2, pch=20)
 
-par(mfrow = c(1, 1))
 # BIC
+par(mfrow = c(1, 1))
 bic.best = reg.summary$bic[which.min(reg.summary$bic)]
 plot(reg.summary$bic, xlab=" Number of Variables ", ylab=" BIC", type="l",
       main=paste("Max BIC: ", format(bic.best, digits=3)))
