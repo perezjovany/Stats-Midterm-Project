@@ -172,6 +172,22 @@ ggplot(train_df, aes(x = price, y = airconditioning)) +
   labs(x = "price", y = "air conditioning") +
   theme_minimal()
 
+par(mfrow = c(1, 1))
+
+#checking scatter plot of each independent varaible against price.
+scatter_plots <- function(df) {
+  y_var <- colnames(df)[1] # Get the name of the first column as the y variable
+  
+  # Loop through each remaining column and plot a scatter plot with the y variable
+  for (x_var in colnames(df)[-1]) {
+    plot(df[[x_var]], df[[y_var]],
+          main=paste("Scatter Plot of", y_var,"vs.", x_var),
+          xlab = x_var, ylab = y_var)
+  }
+}
+scatter_plots(train_df)
+#only bedrooms appears to have a non-linear relationship, but this variable was ommitted rom the final model.
+
 # ---- MODEL BUILDING ----------------------------------------------------------
 
 # full model
@@ -253,36 +269,20 @@ bic_model$coefficients = coef.selected
 
 # ---- ASSUMPTIONS OF MULTIPLE LINEAR REGRESSION -------------------------------
 
-par(mfrow = c(1, 1))
-
-#checking scatter plot of each independent varaible against price.
-scatter_plots <- function(df) {
-  y_var <- colnames(df)[1] # Get the name of the first column as the y variable
-  
-  # Loop through each remaining column and plot a scatter plot with the y variable
-  for (x_var in colnames(df)[-1]) {
-    plot(df[[x_var]], df[[y_var]],
-          main=paste("Scatter Plot of", y_var,"vs.", x_var),
-          xlab = x_var, ylab = y_var)
-  }
-}
-scatter_plots(train_df)
-#only bedrooms appears to have a non-linear relationship, but this variable was ommitted rom the final model.
-
-#multicollinearity
-#from the earlier heatmap, thid condition appears to be met.
-# TODO: teachers code add conclusions to docs 
+# Multicollinearity
+# from the earlier heatmap, this condition appears to be met.
 cor.matrix=cor(train_df[,sapply(train_df,is.numeric)])
 image(abs(cor.matrix))
 ggplot(data = melt(cor.matrix),aes(x=Var1,y=Var2,fill=value))+geom_tile()
-vif(bic_model)
-# all variables has vif values lower than 5 so no multicollinearity
 
-#Independence and Homoscedasticity
+# all variables has vif values lower than 5 so no multicollinearity
+vif(bic_model)
+
+# Independence and Homoscedasticity
 my_resid <- resid(bic_model)
 plot(fitted(bic_model), my_resid, xlab = "Predicted Values", ylab = "Residuals", main = "Residual Plot")
 abline(h = 0)
-#potential heteroscedacity
+# potential heteroscedacity
 
 # ---- PERFORMANCE -------------------------------------------------------------
 # TODO: update performance measures with bic_model instead/alongside model
