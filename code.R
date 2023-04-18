@@ -1,4 +1,11 @@
-# ---- TRAINING DATA ----
+# ---- LOAD REQUIRED LIBRARIES -------------------------------------------------
+
+library(ggplot2)
+library(reshape2)
+library(leaps)
+library(faraway)
+
+# ---- TRAINING DATA -----------------------------------------------------------
 
 # Read and Clean Training Data
 train_df = read.csv("Housing_train.csv")
@@ -31,7 +38,7 @@ str(train_df)
 # Descriptive Analysis
 summary(train_df)
 
-# ---- TESTING DATA ----
+# ---- TESTING DATA ------------------------------------------------------------
 
 # Clean Testing Data
 test_df = read.csv("Housing_test.csv")
@@ -53,10 +60,9 @@ test_df$furnishingstatus = factor(test_df$furnishingstatus,
 
 # Drop index column
 test_df = test_df[, !names(test_df) %in% "X"]
-
 str(test_df)
 
-# ---- Univariate Analysis ----
+# ---- UNIVARIATE ANALYSIS -----------------------------------------------------
 
 # Summary statistics for numeric variables
 summary(train_df[c("price", "area", "bathrooms", "stories", "parking")])
@@ -70,6 +76,7 @@ table(train_df$airconditioning)
 table(train_df$prefarea)
 
 # Bar and box plots for categorical variables
+par(mfrow=c(1,2))
 barplot(table(train_df$mainroad), main="Main Road (Yes/No)", xlab="Main Road")
 boxplot(train_df$price ~ train_df$mainroad, main = "Price differences of Main Road",
         xlab = "Main Road", ylab = "Price")
@@ -90,20 +97,17 @@ boxplot(train_df$price ~ train_df$prefarea, main = "Price differences of Preferr
         xlab = "Preferred Area", ylab = "Price")
 
 # Bar plot for ordinal variable
+par(mfrow=c(1,1))
 barplot(table(train_df$stories), main="Number of Stories", xlab="Stories")
 
 # Box plot for numeric variables
+par(mfrow=c(1,2))
 boxplot(train_df$price, main="Price")
 boxplot(train_df$area, main="Area")
 boxplot(train_df$bathrooms, main="Number of Bathrooms")
 boxplot(train_df$parking, main="Number of Parking Spaces")
 
-
-# ---- Bivariate Analysis ----
-
-# Load required libraries
-library(ggplot2)
-library(reshape2)
+# ---- BIVARIATE ANALYSIS ------------------------------------------------------
 
 # Select only numeric variables
 numeric_vars <- train_df[, sapply(train_df, is.numeric)]
@@ -123,7 +127,6 @@ ggplot(corr_df, aes(x=Var1, y=Var2, fill=value, label=round(value, 2))) +
 
 # Now create Scatter Plots for the pairs of features having significant correlations.
 
-
 # Select significant correlations
 sig_corrs <- subset(reshape2::melt(corr_matrix), abs(value) > 0.38 & Var1 != Var2)
 sig_corrs
@@ -138,7 +141,6 @@ ggplot(train_df, aes(x = bathrooms, y = price)) +
   geom_point() +
   labs(x = "Bathrooms", y = "Price") +
   theme_minimal()
-
 
 ggplot(train_df, aes(x = stories, y = price)) +
   geom_point() +
@@ -170,47 +172,88 @@ ggplot(train_df, aes(x = price, y = airconditioning)) +
   labs(x = "price", y = "air conditioning") +
   theme_minimal()
 
+# ---- MODEL BUILDING ----------------------------------------------------------
 
-
-# ---- Model Building ----
-
-# OLS model
-model <- lm(price ~ ., data = train_df, contrast = list(furnishingstatus="contr.sum"))
+# full model
+model = lm(price ~ ., data = train_df,
+            contrast = list(furnishingstatus="contr.sum"))
 summary(model)
 
-# Iteratively remove insignificant parameters
-max_p_value <- 0.005
+# regsubsets full model
+regfit.full = regsubsets(model$terms, data=train_df, nvmax=13)
+summary(regfit.full)
 
-is_insignificant <- function(model) {
-  p_values <- summary(model)$coefficients[,"Pr(>|t|)"]
-  any(p_values[-1] > max_p_value)
+# split training data into train and val
+set.seed(1)
+train = sample(1:nrow(train_df), ceiling(nrow(train_df) * 0.75), replace=F)
+val = setdiff(1:nrow(train_df), train_df)
+
+# RSS analysis
+regfit.best = regsubsets(model$terms, data=train_df, nvmax=13)
+val.mat = model.matrix(model$terms, data=train_df[val,])
+val.err = rep(NA,13)
+for (i in 1:13)
+{
+  coefi=coef(regfit.best,id=i)
+  predi=val.mat[,names(coefi)]%*%coefi
+  val.err[i]=mean((train_df$price[val]-predi)^2)
 }
+val.err
+which.min(val.err)
+coef(regfit.best,13)
 
-while (is_insignificant(model)) {
-  coef_summary <- summary(model)$coefficients
-  p_values <- coef_summary[,"Pr(>|t|)"]
-  max_p_index <- which.max(p_values[-1]) + 1
-  insignificant_var <- rownames(coef_summary)[max_p_index]
-  
-  if (length(insignificant_var) > 0) {
-    # message("Removing ", insignificant_var)
-    model <- update(model, as.formula(paste("~ . -", insignificant_var)))
-  } else {
-    break
-  }
-}
+# RSS
+par(mfrow = c(2, 2))
+rss.best = reg.summary$rss[which.min(reg.summary$rss)]
+plot(reg.summary$rss, xlab=" Number of Variables ", ylab=" RSS", type="l",
+      main=paste("Min. RSS: ", format(rss.best, scientific=TRUE, digits=3)))
+which.min(reg.summary$rss)
+points(which.min(reg.summary$rss), rss.best, col="red", cex=2, pch=20)
 
-# Final model summary
-summary(model)
+# R2
+r2.best = reg.summary$rsq[which.max(reg.summary$rsq)]
+plot(reg.summary$rsq, xlab=" Number of Variables ", ylab=" RSS", type="l",
+      main=paste("Max R2: ", format(r2.best*100, digits=4), "%"))
+which.max(reg.summary$rsq)
+points(which.max(reg.summary$rsq), r2.best, col="red", cex=2, pch=20)
 
-# R2 and Adjusted R2 values
-r_squared <- summary(model)$r.squared
-adjusted_r_squared <- summary(model)$adj.r.squared
+# Adj. R2
+adj_r2.best = reg.summary$adjr2[which.max(reg.summary$adjr2)]
+plot(reg.summary$adjr2, xlab=" Number of Variables ", ylab=" Adjusted RSq", type="l",
+      main=paste("Max Adj. R2: ", format(adj_r2.best*100, digits=4), "%"))
+which.max(reg.summary$adjr2)
+points(which.max(reg.summary$adjr2), adj_r2.best, col="blue", cex=2, pch=20)
 
-cat("R2: ", r_squared, "\n")
-cat("Adjusted R2: ", adjusted_r_squared, "\n")
+# Cp
+cp.best = reg.summary$cp[which.min(reg.summary$cp)]
+plot(reg.summary$cp, xlab=" Number of Variables ", ylab="Cp", type="l", 
+      main=paste("Max Cp: ", format(cp.best, digits=3)))
+which.min (reg.summary$cp )
+points(which.min(reg.summary$cp), cp.best, col="blue", cex=2, pch=20)
 
-#checking assumtpions of multiple linear regresssion
+par(mfrow = c(1, 1))
+# BIC
+bic.best = reg.summary$bic[which.min(reg.summary$bic)]
+plot(reg.summary$bic, xlab=" Number of Variables ", ylab=" BIC", type="l",
+      main=paste("Max BIC: ", format(bic.best, digits=3)))
+which.min(reg.summary$bic )
+points(which.min(reg.summary$bic), bic.best, col="purple", cex=2, pch=20)
+
+# compare bic coefficients
+par(mfrow = c(1, 2))
+plot(regfit.full, scale = "r2")
+plot(regfit.full, scale = "bic")
+coef.selected = coef(regfit.full, which.min(reg.summary$bic))
+coef.selected
+
+# create best bic model
+bic_model = lm(price~.-guestroom-bedrooms, data=train_df,
+                contrast = list(furnishingstatus="contr.sum"))
+bic_model$coefficients = coef.selected
+
+# ---- ASSUMPTIONS OF MULTIPLE LINEAR REGRESSION -------------------------------
+
+par(mfrow = c(1, 1))
 
 #checking scatter plot of each independent varaible against price.
 scatter_plots <- function(df) {
@@ -218,7 +261,9 @@ scatter_plots <- function(df) {
   
   # Loop through each remaining column and plot a scatter plot with the y variable
   for (x_var in colnames(df)[-1]) {
-    plot(df[[x_var]], df[[y_var]], main = paste("Scatter Plot of", y_var, "vs.", x_var), xlab = x_var, ylab = y_var)
+    plot(df[[x_var]], df[[y_var]],
+          main=paste("Scatter Plot of", y_var,"vs.", x_var),
+          xlab = x_var, ylab = y_var)
   }
 }
 scatter_plots(train_df)
@@ -226,15 +271,21 @@ scatter_plots(train_df)
 
 #multicollinearity
 #from the earlier heatmap, thid condition appears to be met.
+# TODO: teachers code add conclusions to docs 
+cor.matrix=cor(train_df[,sapply(train_df,is.numeric)])
+image(abs(cor.matrix))
+ggplot(data = melt(cor.matrix),aes(x=Var1,y=Var2,fill=value))+geom_tile()
+vif(bic_model)
+# all variables has vif values lower than 5 so no multicollinearity
 
 #Independence and Homoscedasticity
-my_resid <- resid(model)
-plot(fitted(model), my_resid, xlab = "Predicted Values", ylab = "Residuals", main = "Residual Plot")
+my_resid <- resid(bic_model)
+plot(fitted(bic_model), my_resid, xlab = "Predicted Values", ylab = "Residuals", main = "Residual Plot")
 abline(h = 0)
 #potential heteroscedacity
 
-#Performance
-#use our model with the test_df
+# ---- PERFORMANCE -------------------------------------------------------------
+# TODO: update performance measures with bic_model instead/alongside model
 
 predictions <- predict(model, test_df)
 predictions
@@ -294,76 +345,3 @@ n <- nrow(new_test_df)
 p <- length(model$coefficients) - 1 # subtract 1 for the intercept term
 adj_new_test_r_squared <- 1 - ((1 - new_test_r_squared) * (n - 1) / (n - p - 1))
 adj_new_test_r_squared #adj R^2 = .6252
-
-################################################################################
-# Utilize the lower code
-
-
-#teachers code 4/12 multicoll; utilize the following; currently does nothing TODO
-cor.matrix=cor(train_df[,sapply(train_df,is.numeric)])
-image(abs(cor.matrix))
-library(reshape2)
-library(ggplot2)
-ggplot(data = melt(cor.matrix),aes(x=Var1,y=Var2,fill=value))+geom_tile()
-library(faraway)
-vif(model)
-# all variables has vif values lower than 5 so no multicollinearity
-
-
-#teachers code 4/10 regsubsets; utilize the following; currently does nothing TODO
-library(leaps)
-lm.full=lm(price~.,data=train_df)
-summary(lm.full)
-# TODO: need update model to include interactions between variables and variables^2
-regfit.full=regsubsets(model$terms,data=train_df,nvmax=13)
-summary(regfit.full)
-reg.summary=summary(regfit.full)
-names(reg.summary)
-par(mfrow =c(2,2))
-
-plot(reg.summary$rss ,xlab=" Number of Variables ",ylab=" RSS",type="l")
-
-plot(reg.summary$adjr2 ,xlab =" Number of Variables ",ylab=" Adjusted RSq",type="l")
-which.max (reg.summary$adjr2)
-points (which.max (reg.summary$adjr2), reg.summary$adjr2[which.max (reg.summary$adjr2)], col ="red",cex =2, pch =20)
-
-plot(reg.summary$cp ,xlab =" Number of Variables ",ylab="Cp",type="l")
-which.min (reg.summary$cp )
-points (which.min (reg.summary$cp ), reg.summary$cp [which.min (reg.summary$cp )], col ="red",cex =2, pch =20)
-
-plot(reg.summary$bic ,xlab=" Number of Variables ",ylab=" BIC",type="l")
-which.min (reg.summary$bic )
-points (which.min (reg.summary$bic ), reg.summary$bic [which.min (reg.summary$bic )], col =" red",cex =2, pch =20)
-
-plot(regfit.full ,scale ="r2")
-plot(regfit.full ,scale ="bic")
-coef.selected=coef(regfit.full ,which.min (reg.summary$bic ))
-coef.selected
-
-# teachers code 4/12 fwd/bwd; utilize the following; currently does nothing TODO
-regfit.fwd=regsubsets(model$terms,data=train_df,nvmax=13,method="forward")
-summary(regfit.fwd)
-regfit.bwd=regsubsets(model$terms,data=train_df,nvmax=13,method="backward")
-summary(regfit.bwd)
-coef(regfit.full,4)
-coef(regfit.fwd,4)
-coef(regfit.bwd,4)
-
-# teachers code 4/12 train/val; utilize the following; currently does nothing TODO
-set.seed(1)
-train=sample(1:nrow(train_df), ceiling(nrow(train_df) * 0.75), replace=F)
-val=setdiff(1:nrow(train_df), train_df)
-regfit.best=regsubsets(model$terms,data=train_df,nvmax=13)
-val.mat <- model.matrix(model$terms, data = train_df[val,])
-val.err=rep(NA,13)
-for (i in 1:13)
-{
-  coefi=coef(regfit.best,id=i)
-  predi=val.mat[,names(coefi)]%*%coefi
-  # pred=predict.regsubsets(regfit.best,newdata=Credit[val,],id=i)
-  val.err[i]=mean((train_df$price[val]-predi)^2)
-}
-val.err
-which.min(val.err)
-coef(regfit.best,4)
-
