@@ -197,7 +197,7 @@ summary(model)
 
 # regsubsets full model
 regfit.full = regsubsets(model$terms, data=train_df, nvmax=13)
-summary(regfit.full)
+reg.summary = summary(regfit.full)
 
 # split training data into train and val
 set.seed(1)
