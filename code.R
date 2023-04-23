@@ -100,10 +100,11 @@ boxplot(train_df$price ~ train_df$prefarea, main = "Price differences of Preferr
 par(mfrow=c(1,1))
 barplot(table(train_df$stories), main="Number of Stories", xlab="Stories")
 
-# Box plot for numeric variables
+## Box plot for numeric variables
 par(mfrow=c(1,2))
 boxplot(train_df$price, main="Price")
 boxplot(train_df$area, main="Area")
+boxplot(train_df$bedrooms, main = "Bedrooms")
 boxplot(train_df$bathrooms, main="Number of Bathrooms")
 boxplot(train_df$parking, main="Number of Parking Spaces")
 
