@@ -286,26 +286,27 @@ abline(h = 0)
 # potential heteroscedacity
 
 # ---- PERFORMANCE -------------------------------------------------------------
-# TODO: update performance measures with bic_model instead/alongside model
 
+summary(model)
+###performance of first model with all predictors
 predictions <- predict(model, test_df)
 predictions
 test_price = test_df$price
 
-plot(predictions, test_price, xlab = "Predicted Values", ylab = "Actual Values", main = "Actual vs. Predicted Values",
+plot(predictions, test_price, xlab = "Predicted Values", ylab = "Actual Values", main = "Actual vs. Predicted Values(all predictors)",
      xlim = c(0, max(predictions, test_price)), ylim = c(0, max(predictions, test_price)))
 abline(0, 1, col = "red")
 
 #we can calculate the r^2 value of the model using the predicted vs actual price
 test_r = cor(predictions, test_price)
-test_r # r = .8292326
+test_r # r = .831
 
 test_r_squared = test_r * test_r
-test_r_squared # r^2 = .6876
+test_r_squared # r^2 = .690
 
 MSE = mean((test_price - predictions)^2)
 RMSE = sqrt(MSE)
-RMSE # rmse = 1022871
+RMSE # rmse = 1016772
 test_average_price = mean(test_price)
 test_average_price # 4608023
 
@@ -313,9 +314,40 @@ test_average_price # 4608023
 n <- nrow(test_df)
 p <- length(model$coefficients) - 1 # subtract 1 for the intercept term
 adj_test_r_squared <- 1 - ((1 - test_r_squared) * (n - 1) / (n - p - 1))
-adj_test_r_squared #adj R^2 = .6558
+adj_test_r_squared #adj R^2 = .648
 
-#removing the 3 outliers and recalculating
+###performance of the bic_model
+summary(bic_model)
+###performance of first bic_model with all predictors
+predictions <- predict(bic_model, test_df)
+predictions
+test_price = test_df$price
+
+plot(predictions, test_price, xlab = "Predicted Values", ylab = "Actual Values", main = "Actual vs. Predicted Values(bic_model)",
+     xlim = c(0, max(predictions, test_price)), ylim = c(0, max(predictions, test_price)))
+abline(0, 1, col = "red")
+
+#we can calculate the r^2 value of the bic_model using the predicted vs actual price
+test_r = cor(predictions, test_price)
+test_r # r = .797
+
+test_r_squared = test_r * test_r
+test_r_squared # r^2 = .635
+
+MSE = mean((test_price - predictions)^2)
+RMSE = sqrt(MSE)
+RMSE # rmse = 1102634
+test_average_price = mean(test_price)
+test_average_price # 4608023
+
+# Calculate adjusted R-squared
+n <- nrow(test_df)
+p <- length(bic_model$coefficients) - 1 # subtract 1 for the intercept term
+adj_test_r_squared <- 1 - ((1 - test_r_squared) * (n - 1) / (n - p - 1))
+adj_test_r_squared #adj R^2 = .594
+
+###our data set has 3 clear outliers in graph
+###removing the 3 outliers and recalculating using first model
 new_test_df = test_df[-c(1,3,4),] #outliers are rows 1,3,4
 
 #use our model with the new_test_df
@@ -330,14 +362,14 @@ abline(0, 1, col = "red")
 
 #we can calculate the r^2 value of the model using the predicted vs actual price
 new_test_r = cor(new_predictions, new_test_price)
-new_test_r # r = .813
+new_test_r # r = .814
 
 new_test_r_squared = new_test_r * new_test_r
-new_test_r_squared # r^2 = .6609
+new_test_r_squared # r^2 = .663
 
 MSE = mean((new_test_price - new_predictions)^2)
 RMSE = sqrt(MSE)
-RMSE # rmse = 957023.4
+RMSE # rmse = 955436.3
 new_test_average_price = mean(new_test_price)
 new_test_average_price # 4450514
 
@@ -345,4 +377,4 @@ new_test_average_price # 4450514
 n <- nrow(new_test_df)
 p <- length(model$coefficients) - 1 # subtract 1 for the intercept term
 adj_new_test_r_squared <- 1 - ((1 - new_test_r_squared) * (n - 1) / (n - p - 1))
-adj_new_test_r_squared #adj R^2 = .6252
+adj_new_test_r_squared #adj R^2 = .615
